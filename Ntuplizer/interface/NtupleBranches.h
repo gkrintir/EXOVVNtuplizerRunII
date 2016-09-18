@@ -59,16 +59,26 @@ public:
   std::vector<float>              genParticle_phi      ;
   std::vector<float>              genParticle_mass     ;
   std::vector<int  >              genParticle_pdgId    ;
+  std::vector<int  >              genParticle_isPrompt ;
+  std::vector<int  >              genParticle_isDirectPromptTauDecayProduct;
+  std::vector<int  >              genParticle_fromHardProcessFinalState;
+  std::vector<int  >              genParticle_isDirectHardProcessTauDecayProductFinalState;
   std::vector<int  >              genParticle_status   ;
   std::vector<int  >              genParticle_nDau     ;
   std::vector<int  >              genParticle_nMoth    ;
   std::vector<std::vector<int> >  genParticle_mother   ; 
   std::vector<std::vector<int> >  genParticle_dau      ;
+  std::vector<float >  genParticle_tauvispt      ;
+  std::vector<float >  genParticle_tauviseta      ;
+  std::vector<float >  genParticle_tauvisphi      ;
+  std::vector<float >  genParticle_tauvismass      ;
+  std::vector<int >  genParticle_taudecay      ;
 
   /** generator info */
   float                           lheV_pt              ;
   float                           lheHT                ;
-  float                           lheNj                ;
+  int                             lheNj                ;
+  float                           lheV_mass            ;
   float                           genWeight            ;
   float                           qScale               ;
   std::vector<int  >              PDF_id               ;
@@ -111,6 +121,8 @@ public:
   std::vector<int>	      el_expectedMissingInnerHits;
   std::vector<float>          el_d0			 ;
   std::vector<float>          el_dz			 ;
+  std::vector<float>          el_d0_allvertices		 ;
+  std::vector<float>          el_dz_allvertices		 ;
   std::vector<float>          el_dr03EcalRecHitSumEt      ;
   std::vector<float>          el_dr03HcalDepth1TowerSumEt ;
   std::vector<float>          el_rho                      ;
@@ -125,6 +137,8 @@ public:
   std::vector<int>	      el_isVetoElectron	          ;
   std::vector<int>	      el_isMediumElectron	  ;
   std::vector<int>	      el_isTightElectron	  ;    
+  std::vector<int>  	      el_nonTrigMVAID	          ;
+  std::vector<float>  	      el_nonTrigMVA	          ;
   std::vector<int  >  	      el_isHeepElectron	          ;
   std::vector<int  >  	      el_isHeep51Electron         ;
   std::vector<int  >  	      el_isLooseElectron	  ; 
@@ -148,9 +162,13 @@ public:
   std::vector<float>  	      mu_pt		         ;    
   std::vector<int  >          mu_isHighPtMuon		 ;
   std::vector<int  >          mu_isTightMuon		 ;
+  std::vector<int  >  	      mu_isMediumMuon	         ; // YT added
   std::vector<int  >          mu_isLooseMuon		 ;
   std::vector<int  >          mu_isPFMuon		 ;
   std::vector<int  >          mu_isSoftMuon		 ;   
+  std::vector<int  >  	      mu_isGlobalMuon	         ;
+  std::vector<int  >  	      mu_isTrackerMuon	         ; // YT added
+  std::vector<int  >  	      mu_isTrackerHighPtMuon	         ;
   std::vector<float>  	      mu_pfRhoCorrRelIso03  	 ;
   std::vector<float>  	      mu_pfRhoCorrRelIso04  	 ;
   std::vector<float>  	      mu_pfDeltaCorrRelIso  	 ;
@@ -162,8 +180,13 @@ public:
   std::vector<float>  	      mu_trackCorrIso	         ;
   std::vector<float>          mu_d0			 ;
   std::vector<float>          mu_dz			 ;
+  std::vector<float>          mu_d0_allvertices		 ;
+  std::vector<float>          mu_dz_allvertices		 ;
+  std::vector<float>  	      mu_innerTrack_pt 	         ;
   std::vector<float>  	      mu_bestTrack_pt  	         ;
   std::vector<float>  	      mu_bestTrack_ptErr  	 ;    
+  std::vector<float>  	      mu_tunePTrack_pt  	       ;
+  std::vector<float>  	      mu_tunePTrack_ptErr  	 ;   
   std::vector<float>  	      mu_pfRhoCorrRelIso03Boost  ;
   std::vector<float>  	      mu_pfRhoCorrRelIso04Boost  ;
   std::vector<float>  	      mu_pfDeltaCorrRelIsoBoost  ;
@@ -172,7 +195,6 @@ public:
   std::vector<float>  	      mu_neutralHadIsoBoost      ;
   std::vector<float>  	      mu_chargedHadIsoBoost      ;  
   std::vector<float>  	      mu_normChi2  	         ;
-  std::vector<int  >  	      mu_isGlobalMuon	         ;
   std::vector<int  >  	      mu_trackerHits	         ;
   std::vector<int  >  	      mu_matchedStations         ;
   std::vector<int  >  	      mu_pixelHits 	         ;
@@ -198,6 +220,7 @@ public:
   std::vector<float>  	      tau_chargedHadIso	     	 ;
   std::vector<float>  	      tau_trackIso	         ;
   std::vector<float>          tau_d0			 ;  
+  std::vector<float>          tau_dz			 ;  // YT added
   std::vector<float>  	      tau_pfRhoCorrRelIso03Boost ;
   std::vector<float>  	      tau_pfRhoCorrRelIso04Boost ;
   std::vector<float>  	      tau_pfDeltaCorrRelIsoBoost ;
@@ -206,6 +229,9 @@ public:
   std::vector<float>  	      tau_neutralHadIsoBoost     ;
   std::vector<float>  	      tau_chargedHadIsoBoost     ;  
   std::vector<int  >  	      tau_TauType	         ;  
+  std::vector<int  >  	      tau_decayMode	         ;  // YT added
+  std::vector<float>  	      tau_chargedPionPt	         ;  // YT added
+  std::vector<float>  	      tau_neutralPionPt	         ;  // YT added
   
   /** tau discriminants */
   std::vector<float>  	      tau_decayModeFindingNewDMs	              ;
@@ -557,6 +583,7 @@ public:
   std::vector<float>  		    triggerObject_eta	      ;
   std::vector<float>  		    triggerObject_phi	      ;
   std::vector<float>  		    triggerObject_mass	      ;
+  std::vector<std::string>  		    triggerObject_lastname    ;
   std::vector< std::vector<float> > triggerObject_filterIDs   ; // as defined in http://cmslxr.fnal.gov/lxr/source/DataFormats/HLTReco/interface/TriggerTypeDefs.h
   std::vector< std::vector<int> >   triggerObject_firedTrigger; // as defined in plugins/TriggersNtuplizer.cc
 
@@ -593,6 +620,10 @@ public:
   std::vector<float>  	            MET_corrPy  	      ;
   std::vector<float>  	      	    MET_et		      ;
   std::vector<float>  	      	    MET_phi		      ;
+  std::vector<float>  	      	    MET_puppi_et		      ;
+  std::vector<float>  	      	    MET_puppi_phi	      ;
+  std::vector<float>  	      	    MET_mva_et		      ;
+  std::vector<float>  	      	    MET_mva_phi	              ;
   std::vector<float>  	      	    MET_sumEt		      ;
   std::vector<float>  	      	    MET_T1Uncertainty	      ;
 
@@ -601,7 +632,14 @@ public:
   std::vector<float>                MET_cov00	      ;	 
   std::vector<float>                MET_cov10	      ;	 
   std::vector<float>                MET_cov11	      ;	 
-  
+  std::vector<float>                MET_mva_cov00	      ;	 
+  std::vector<float>                MET_mva_cov10	      ;	 
+  std::vector<float>                MET_mva_cov11	      ;	 
+  std::vector< std::vector<float> > MET_mva_recoil_pt;
+  std::vector< std::vector<float> > MET_mva_recoil_eta;
+  std::vector< std::vector<float> > MET_mva_recoil_phi;
+  std::vector< std::vector<int> >   MET_mva_recoil_pdgId;
+  std::vector<int>  	            MET_Nmva;
 
   /*------------------------EVENT infos-------------------------*/    
   int                               EVENT_event            ;

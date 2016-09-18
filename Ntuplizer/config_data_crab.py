@@ -301,7 +301,7 @@ if config["ADDAK8GENJETS"]:
   process.genJetsAK8.jetCorrFactorsSource = cms.VInputTag( cms.InputTag("") )
   process.selectedGenJetsAK8 = selectedPatJetsAK8.clone( src = 'genJetsAK8', cut = cms.string('pt > 20') )
 
-################# Prepare recluster jets with b-tagging ######################
+################# Prepare recluster or update jets with b-tagging ######################
 bTagDiscriminators = [
     # 'pfJetProbabilityBJetTags',
     # 'pfJetBProbabilityBJetTags',
@@ -312,6 +312,17 @@ bTagDiscriminators = [
     # 'pfTrackCountingHighEffBJetTags',
     'pfBoostedDoubleSecondaryVertexAK8BJetTags'    
 ]
+
+#Needed in 80X to get the latest Hbb training
+if config["UpdateJetCollection"]:
+  from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+## Update the slimmedJets in miniAOD: corrections from the chosen Global Tag are applied and the b-tag discriminators are re-evaluated
+  updateJetCollection(
+    process,
+    jetSource = cms.InputTag('slimmedJetsAK8'),
+    jetCorrections = ('AK8PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual']), 'None'),
+    btagDiscriminators = bTagDiscriminators
+  )
 
 def cap(s): return s[0].upper() + s[1:]
 
@@ -599,6 +610,15 @@ if config["DOMETSVFIT"]:
   process.load("RecoMET.METProducers.METSignificanceParams_cfi")
   process.METSequence = cms.Sequence (process.METSignificance)
 
+if config["DOMVAMET"]:
+  from RecoMET.METPUSubtraction.jet_recorrections import recorrectJets
+  recorrectJets(process, isData=True)
+  
+  from RecoMET.METPUSubtraction.MVAMETConfiguration_cff import runMVAMET
+  runMVAMET( process, jetCollectionPF="patJetsReapplyJEC")
+  process.MVAMET.srcLeptons  = cms.VInputTag("slimmedMuons", "slimmedElectrons", "slimmedTaus")
+  process.MVAMET.requireOS = cms.bool(False)
+
 ##___________________ taus ______________________##
 
 TAUS = ""
@@ -610,6 +630,8 @@ if config["ADDAK8GENJETS"]:
     
 if config["DOAK8RECLUSTERING"]:
   jetsAK8 = "patJetsAk8CHSJets"
+if config["UpdateJetCollection"]:
+  jetsAK8 = "updatedPatJetsTransientCorrected"
 if doAK8softdropReclustering:  
   jetsAK8softdrop = "patJetsAk8CHSJetsSoftDropPacked"  
 if config["DOAK8PRUNEDRECLUSTERING"]:  
@@ -648,7 +670,7 @@ jecAK4chsUncFile = "%s_DATA_Uncertainty_AK4PFchs.txt"%(JECprefix)
 if config["CORRJETSONTHEFLY"]:
    if config["RUNONMC"]:
      jecLevelsAK8chs = [
-     	 '%s_MC_L1FastJet_AK8PFchs.txt'%(JECprefix), #JEC for 74X
+     	 '%s_MC_L1FastJet_AK8PFchs.txt'%(JECprefix),
      	 '%s_MC_L2Relative_AK8PFchs.txt'%(JECprefix),
      	 '%s_MC_L3Absolute_AK8PFchs.txt'%(JECprefix)
        ]
@@ -667,26 +689,26 @@ if config["CORRJETSONTHEFLY"]:
        ]
    else:
      jecLevelsAK8chs = [
-     	 '%s_DATA_L1FastJet_AK8PFchs.txt'%(JECprefix), #JEC for 74X
+     	 '%s_DATA_L1FastJet_AK8PFchs.txt'%(JECprefix),
      	 '%s_DATA_L2Relative_AK8PFchs.txt'%(JECprefix),
      	 '%s_DATA_L3Absolute_AK8PFchs.txt'%(JECprefix),
-	 '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)# just for spring16V3 using the ones from ak4 instead that AK8PFpuppi
+	     '%s_DATA_L2L3Residual_AK8PFchs.txt'%(JECprefix)
        ]
      jecLevelsAK8Groomedchs = [
      	 '%s_DATA_L2Relative_AK8PFchs.txt'%(JECprefix),
      	 '%s_DATA_L3Absolute_AK8PFchs.txt'%(JECprefix),
-	 '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)# just for spring16V3 using the ones from ak4 instead that AK8PFpuppi
+	     '%s_DATA_L2L3Residual_AK8PFchs.txt'%(JECprefix)
        ]
      jecLevelsAK8Puppi = [
      	 '%s_DATA_L2Relative_AK8PFPuppi.txt'%(JECprefix),
      	 '%s_DATA_L3Absolute_AK8PFPuppi.txt'%(JECprefix),
-	 '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)# just for spring16V3 using the ones from ak4 instead that AK8PFpuppi
+	     '%s_DATA_L2L3Residual_AK8PFPuppi.txt'%(JECprefix)
        ]
      jecLevelsAK4chs = [
      	 '%s_DATA_L1FastJet_AK4PFchs.txt'%(JECprefix),
      	 '%s_DATA_L2Relative_AK4PFchs.txt'%(JECprefix),
      	 '%s_DATA_L3Absolute_AK4PFchs.txt'%(JECprefix),
-	 '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)
+	     '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)
        ]   
 if config["CORRMETONTHEFLY"]:  
    if config["RUNONMC"]:
@@ -700,7 +722,7 @@ if config["CORRMETONTHEFLY"]:
      	 '%s_DATA_L1FastJet_AK4PFchs.txt'%(JECprefix),
      	 '%s_DATA_L2Relative_AK4PFchs.txt'%(JECprefix),
      	 '%s_DATA_L3Absolute_AK4PFchs.txt'%(JECprefix),
-	 '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)
+       '%s_DATA_L2L3Residual_AK4PFchs.txt'%(JECprefix)
        ]	
       			    
 #from PhysicsTools.SelectorUtils.pfJetIDSelector_cfi import pfJetIDSelector
@@ -746,6 +768,7 @@ process.ntuplizer = cms.EDAnalyzer("Ntuplizer",
     doPuppi           = cms.bool(config["DOAK8PUPPI"]),
     doBoostedTaus     = cms.bool(config["DOTAUSBOOSTED"]),
     doMETSVFIT        = cms.bool(config["DOMETSVFIT"]),
+    doMVAMET        = cms.bool(config["DOMVAMET"]),
     vertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
     muons = cms.InputTag("slimmedMuons"),
     electrons = cms.InputTag("slimmedElectrons"),
@@ -767,6 +790,8 @@ process.ntuplizer = cms.EDAnalyzer("Ntuplizer",
     genJetsAK8 = cms.InputTag(genAK8),
     subjetflavour = cms.InputTag("AK8byValAlgo"),
     mets = cms.InputTag(METS),
+    mets_puppi = cms.InputTag("slimmedMETsPuppi"),
+    mets_mva = cms.InputTag("MVAMET","MVAMET"),
     corrMetPx = cms.string("+0.1166 + 0.0200*Nvtx"),
     corrMetPy = cms.string("+0.2764 - 0.1280*Nvtx"),
     jecAK4forMetCorr = cms.vstring( jecLevelsForMET ),

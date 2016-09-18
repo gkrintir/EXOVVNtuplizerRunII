@@ -29,10 +29,21 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
       tree_->Branch( "genParticle_mass"	     , &genParticle_mass       ); 
       tree_->Branch( "genParticle_pdgId"     , &genParticle_pdgId      );
       tree_->Branch( "genParticle_status"    , &genParticle_status     );
+      tree_->Branch( "genParticle_isPrompt"  , &genParticle_isPrompt   );
+      tree_->Branch( "genParticle_isDirectPromptTauDecayProduct"  , &genParticle_isDirectPromptTauDecayProduct);
+      tree_->Branch( "genParticle_isDirectHardProcessTauDecayProductFinalState"  , &genParticle_isDirectHardProcessTauDecayProductFinalState);
+      tree_->Branch( "genParticle_fromHardProcessFinalState"  , &genParticle_fromHardProcessFinalState   );
       tree_->Branch( "genParticle_mother"    , &genParticle_mother     );
       tree_->Branch( "genParticle_nMoth"     , &genParticle_nMoth      );
       tree_->Branch( "genParticle_nDau"	     , &genParticle_nDau       ); 
       tree_->Branch( "genParticle_dau"	     , &genParticle_dau        );
+      tree_->Branch( "genParticle_tauvispt"	     , &genParticle_tauvispt        );
+      tree_->Branch( "genParticle_tauviseta"	     , &genParticle_tauviseta        );
+      tree_->Branch( "genParticle_tauvisphi"	     , &genParticle_tauvisphi       );
+      tree_->Branch( "genParticle_tauvismass"	     , &genParticle_tauvismass        );
+      tree_->Branch( "genParticle_taudecay"	     , &genParticle_taudecay        );
+
+
     } //doGenParticles
     
     if ( runFlags["doGenEvent"] ){
@@ -40,6 +51,7 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
       tree_->Branch( "lheV_pt"	             , &lheV_pt                ); 
       tree_->Branch( "lheHT"	             , &lheHT                  ); 
       tree_->Branch( "lheNj"	             , &lheNj                  ); 
+      tree_->Branch( "lheV_mass"             , &lheV_mass              ); 
       tree_->Branch( "genWeight"	     , &genWeight              ); 
       tree_->Branch( "qScale"	             , &qScale                 );
       tree_->Branch( "PDF_x"	             , &PDF_x                  );
@@ -78,6 +90,8 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "el_expectedMissingInnerHits", &el_expectedMissingInnerHits );  
     tree_->Branch( "el_d0"                      , &el_d0                       );
     tree_->Branch( "el_dz"		        , &el_dz                       );  
+    tree_->Branch( "el_d0_allvertices"          , &el_d0_allvertices           );
+    tree_->Branch( "el_dz_allvertices"          , &el_dz_allvertices           );  
     tree_->Branch( "el_dr03EcalRecHitSumEt"     , &el_dr03EcalRecHitSumEt      );
     tree_->Branch( "el_dr03HcalDepth1TowerSumEt", &el_dr03HcalDepth1TowerSumEt );
     tree_->Branch( "el_rho"                     , &el_rho                      );
@@ -92,6 +106,8 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "el_isVetoElectron"	        , &el_isVetoElectron           );
     tree_->Branch( "el_isMediumElectron"	, &el_isMediumElectron         );
     tree_->Branch( "el_isTightElectron"         , &el_isTightElectron          );  
+    tree_->Branch( "el_nonTrigMVAID"	     	, &el_nonTrigMVAID             );
+    tree_->Branch( "el_nonTrigMVA"	     	, &el_nonTrigMVA               );
     tree_->Branch( "el_isHeepElectron"	        , &el_isHeepElectron           );
     tree_->Branch( "el_isHeep51Electron"	, &el_isHeep51Electron         );
     tree_->Branch( "el_isLooseElectron"	        , &el_isLooseElectron          );  
@@ -124,9 +140,13 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "mu_pt"		      , &mu_pt  	  	   );
     tree_->Branch( "mu_isHighPtMuon"	      , &mu_isHighPtMuon      	   );
     tree_->Branch( "mu_isTightMuon"	      , &mu_isTightMuon       	   );
+    tree_->Branch( "mu_isMediumMuon"	      , &mu_isMediumMuon    	   );
     tree_->Branch( "mu_isLooseMuon"	      , &mu_isLooseMuon       	   );
     tree_->Branch( "mu_isPFMuon"	      , &mu_isPFMuon	      	   );
     tree_->Branch( "mu_isSoftMuon"	      , &mu_isSoftMuon             );
+    tree_->Branch( "mu_isGlobalMuon"	      , &mu_isGlobalMuon    	   );
+    tree_->Branch( "mu_isTrackerMuon"	      , &mu_isTrackerMuon    	   );
+    tree_->Branch( "mu_isTrackerHighPtMuon"	      , &mu_isTrackerHighPtMuon    	   );
     tree_->Branch( "mu_pfRhoCorrRelIso03"     , &mu_pfRhoCorrRelIso03 	   );
     tree_->Branch( "mu_pfRhoCorrRelIso04"     , &mu_pfRhoCorrRelIso04 	   );
     tree_->Branch( "mu_pfDeltaCorrRelIso"     , &mu_pfDeltaCorrRelIso 	   );
@@ -138,8 +158,13 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "mu_trackCorrIso"	      , &mu_trackCorrIso	   );
     tree_->Branch( "mu_d0"                    , &mu_d0  	      	   );
     tree_->Branch( "mu_dz"                    , &mu_dz  	      	   );
-    tree_->Branch( "mu_bestTrack_pt"	      , &mu_bestTrack_pt      	   );
+    tree_->Branch( "mu_d0_allvertices"        , &mu_d0_allvertices  	   );
+    tree_->Branch( "mu_dz_allvertices"        , &mu_dz_allvertices    	   );
+    tree_->Branch( "mu_innerTrack_pt"	        , &mu_innerTrack_pt      	   );
+    tree_->Branch( "mu_bestTrack_pt"	        , &mu_bestTrack_pt      	   );
     tree_->Branch( "mu_bestTrack_ptErr"	      , &mu_bestTrack_ptErr        );
+    tree_->Branch( "mu_tunePTrack_pt"	        , &mu_tunePTrack_pt      	   );
+    tree_->Branch( "mu_tunePTrack_ptErr"	    , &mu_tunePTrack_ptErr        );
     tree_->Branch( "mu_pfRhoCorrRelIso03Boost", &mu_pfRhoCorrRelIso03Boost );
     tree_->Branch( "mu_pfRhoCorrRelIso04Boost", &mu_pfRhoCorrRelIso04Boost );
     tree_->Branch( "mu_pfDeltaCorrRelIsoBoost", &mu_pfDeltaCorrRelIsoBoost );
@@ -148,7 +173,6 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "mu_neutralHadIsoBoost"    , &mu_neutralHadIsoBoost     );
     tree_->Branch( "mu_chargedHadIsoBoost"    , &mu_chargedHadIsoBoost     );  
     tree_->Branch( "mu_normChi2"  	      , &mu_normChi2	    	   );
-    tree_->Branch( "mu_isGlobalMuon"	      , &mu_isGlobalMuon    	   );
     tree_->Branch( "mu_trackerHits"	      , &mu_trackerHits     	   );
     tree_->Branch( "mu_matchedStations"	      , &mu_matchedStations 	   );
     tree_->Branch( "mu_pixelHits" 	      , &mu_pixelHits	    	   );
@@ -176,6 +200,7 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "tau_chargedHadIso"	     	 , &tau_chargedHadIso	       );
     tree_->Branch( "tau_trackIso"	     	 , &tau_trackIso	       );
     tree_->Branch( "tau_d0"                  	 , &tau_d0		       );
+    tree_->Branch( "tau_dz"                  	 , &tau_dz		       );
     tree_->Branch( "tau_pfRhoCorrRelIso03Boost"  , &tau_pfRhoCorrRelIso03Boost );
     tree_->Branch( "tau_pfRhoCorrRelIso04Boost"  , &tau_pfRhoCorrRelIso04Boost );
     tree_->Branch( "tau_pfDeltaCorrRelIsoBoost"  , &tau_pfDeltaCorrRelIsoBoost );
@@ -184,6 +209,9 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "tau_neutralHadIsoBoost"      , &tau_neutralHadIsoBoost     );
     tree_->Branch( "tau_chargedHadIsoBoost"      , &tau_chargedHadIsoBoost     );  
     tree_->Branch( "tau_TauType"		 , &tau_TauType		       );
+    tree_->Branch( "tau_decayMode"		 , &tau_decayMode	       ); // YT added
+    tree_->Branch( "tau_chargedPionPt"		 , &tau_chargedPionPt	       ); // YT added
+    tree_->Branch( "tau_neutralPionPt"		 , &tau_neutralPionPt	       ); // YT added
   
     if ( runFlags["doBoostedTaus"] ){
       /** tau discriminants */
@@ -525,6 +553,7 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch("triggerObject_eta"		, &triggerObject_eta		);
     tree_->Branch("triggerObject_phi"		, &triggerObject_phi	        );
     tree_->Branch("triggerObject_mass"		, &triggerObject_mass		);
+    tree_->Branch("triggerObject_lastname"	, &triggerObject_lastname	);
     tree_->Branch("triggerObject_filterIDs"	, &triggerObject_filterIDs	);
     tree_->Branch("triggerObject_firedTrigger"	, &triggerObject_firedTrigger	);
   } //doTriggerObjects
@@ -567,6 +596,8 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch("MET_corrPy"		        , &MET_corrPy	     );   
     tree_->Branch("MET_et"	                , &MET_et  	     ); 
     tree_->Branch("MET_phi"	                , &MET_phi           );
+    tree_->Branch("MET_puppi_et"	        , &MET_puppi_et      ); 
+    tree_->Branch("MET_puppi_phi"               , &MET_puppi_phi     );
     tree_->Branch("MET_sumEt"	                , &MET_sumEt 	     ); 
   } //doMissingEt
 
@@ -576,8 +607,23 @@ void NtupleBranches::branch( std::map< std::string, bool >& runFlags ){
     tree_->Branch( "MET_cov00"                                        , &MET_cov00 );
     tree_->Branch( "MET_cov10"                                        , &MET_cov10 );
     tree_->Branch( "MET_cov11"                                        , &MET_cov11 );
+  }
+
+  if ( runFlags["doMVAMET"] ){
+    /** MET SVift*/
+    tree_->Branch("MET_Nmva"	                , &MET_Nmva 	     ); 
+    tree_->Branch("MET_mva_et"	                , &MET_mva_et        ); 
+    tree_->Branch("MET_mva_phi"                 , &MET_mva_phi       );
+    tree_->Branch( "MET_mva_cov00"                                        , &MET_mva_cov00 );
+    tree_->Branch( "MET_mva_cov10"                                        , &MET_mva_cov10 );
+    tree_->Branch( "MET_mva_cov11"                                        , &MET_mva_cov11 );
+    tree_->Branch( "MET_mva_recoil_pt"                                        , &MET_mva_recoil_pt );
+    tree_->Branch( "MET_mva_recoil_eta"                                        , &MET_mva_recoil_eta );
+    tree_->Branch( "MET_mva_recoil_phi"                                        , &MET_mva_recoil_phi );
+    tree_->Branch( "MET_mva_recoil_pdgId"                                        , &MET_mva_recoil_pdgId );
 
   }
+
   
   /*------------- ------EVENT infos-----------------------------*/
   tree_->Branch("EVENT_event"	 , &EVENT_event     );
@@ -619,21 +665,31 @@ void NtupleBranches::reset( void ){
   genParticle_phi.clear();
   genParticle_mass.clear();
   genParticle_pdgId.clear();
+  genParticle_isPrompt.clear();
+  genParticle_isDirectPromptTauDecayProduct.clear();
+  genParticle_fromHardProcessFinalState.clear();
+  genParticle_isDirectHardProcessTauDecayProductFinalState.clear();
   genParticle_status.clear();
   genParticle_mother.clear();
   genParticle_nMoth.clear();
   genParticle_nDau.clear();
   genParticle_dau.clear();
+  genParticle_tauvispt.clear();
+  genParticle_tauviseta.clear();
+  genParticle_tauvisphi.clear();
+  genParticle_tauvismass.clear();
+  genParticle_taudecay.clear();
   
   /** generator info */
-  lheV_pt     = 0;
-  lheHT       = 0;
-  lheNj       = 0;
   genWeight   = 0;
   qScale      = 0;
   PDF_id.clear();  
   PDF_x.clear();	
   PDF_xPDF.clear();
+  lheV_pt = 0;
+  lheHT = 0;
+  lheNj = 0;
+  lheV_mass = 0;
     
   /** electrons */
   el_N        = 0;
@@ -671,6 +727,8 @@ void NtupleBranches::reset( void ){
   el_expectedMissingInnerHits.clear();
   el_d0.clear();
   el_dz.clear();
+  el_d0_allvertices.clear();
+  el_dz_allvertices.clear();
   el_dr03EcalRecHitSumEt.clear();
   el_dr03HcalDepth1TowerSumEt.clear();
   el_rho.clear();
@@ -685,6 +743,8 @@ void NtupleBranches::reset( void ){
   el_isVetoElectron.clear();
   el_isMediumElectron.clear();
   el_isTightElectron.clear();
+  el_nonTrigMVAID.clear();
+  el_nonTrigMVA.clear();
   el_isHeepElectron.clear();
   el_isHeep51Electron.clear();
   el_isLooseElectron.clear();
@@ -715,9 +775,13 @@ void NtupleBranches::reset( void ){
   mu_pt.clear();
   mu_isHighPtMuon.clear();
   mu_isTightMuon.clear();
+  mu_isMediumMuon.clear();
   mu_isLooseMuon.clear();
   mu_isPFMuon.clear();
   mu_isSoftMuon.clear();
+  mu_isGlobalMuon.clear();
+  mu_isTrackerMuon.clear();
+  mu_isTrackerHighPtMuon.clear();
   mu_pfRhoCorrRelIso03.clear();
   mu_pfRhoCorrRelIso04.clear();
   mu_pfDeltaCorrRelIso.clear();
@@ -729,8 +793,13 @@ void NtupleBranches::reset( void ){
   mu_trackCorrIso.clear();
   mu_d0.clear();
   mu_dz.clear();
+  mu_d0_allvertices.clear();
+  mu_dz_allvertices.clear();
+  mu_innerTrack_pt.clear();
   mu_bestTrack_pt.clear();
   mu_bestTrack_ptErr.clear();
+  mu_tunePTrack_pt.clear();
+  mu_tunePTrack_ptErr.clear();
   mu_pfRhoCorrRelIso03Boost.clear();
   mu_pfRhoCorrRelIso04Boost.clear();
   mu_pfDeltaCorrRelIsoBoost.clear();
@@ -739,7 +808,6 @@ void NtupleBranches::reset( void ){
   mu_neutralHadIsoBoost.clear();
   mu_chargedHadIsoBoost.clear();
   mu_normChi2.clear();
-  mu_isGlobalMuon.clear();
   mu_trackerHits.clear();
   mu_matchedStations.clear();
   mu_pixelHits.clear();
@@ -765,6 +833,7 @@ void NtupleBranches::reset( void ){
   tau_chargedHadIso.clear();
   tau_trackIso.clear();
   tau_d0.clear();
+  tau_dz.clear();
   tau_pfRhoCorrRelIso03Boost.clear();
   tau_pfRhoCorrRelIso04Boost.clear();
   tau_pfDeltaCorrRelIsoBoost.clear();
@@ -773,6 +842,9 @@ void NtupleBranches::reset( void ){
   tau_neutralHadIsoBoost.clear();
   tau_chargedHadIsoBoost.clear();
   tau_TauType.clear();
+  tau_decayMode.clear();
+  tau_chargedPionPt.clear();
+  tau_neutralPionPt.clear();
 
   /** tau discriminants */
   tau_decayModeFindingNewDMs.clear();
@@ -1095,6 +1167,7 @@ void NtupleBranches::reset( void ){
   triggerObject_eta.clear();
   triggerObject_phi.clear();
   triggerObject_mass.clear();
+  triggerObject_lastname.clear();
   triggerObject_filterIDs.clear();
   triggerObject_firedTrigger.clear();
 
@@ -1131,6 +1204,9 @@ void NtupleBranches::reset( void ){
   MET_corrPy.clear();
   MET_et.clear();
   MET_phi.clear();
+  MET_puppi_et.clear();
+  MET_puppi_phi.clear();
+
   MET_sumEt.clear();
   MET_T1Uncertainty.clear();
 
@@ -1139,6 +1215,17 @@ void NtupleBranches::reset( void ){
   MET_cov00.clear();
   MET_cov10.clear();
   MET_cov11.clear();
+  MET_mva_et.clear();
+  MET_mva_phi.clear();
+  MET_mva_cov00.clear();
+  MET_mva_cov10.clear();
+  MET_mva_cov11.clear();
+  MET_mva_recoil_pt.clear();
+  MET_mva_recoil_eta.clear();
+  MET_mva_recoil_phi.clear();
+  MET_mva_recoil_pdgId.clear();
+  MET_Nmva.clear();
+
   /*------------------------EVENT infos-------------------------*/    
   EVENT_event = 0;
   EVENT_run = 0;
@@ -1156,6 +1243,7 @@ void NtupleBranches::reset( void ){
   nPuVtxTrue.clear();
   nPuVtx.clear();
   bX.clear();
+
 
 
 
