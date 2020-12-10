@@ -3,6 +3,7 @@
 
 //===================================================================================================================
 BsTauTauNtuplizer::BsTauTauNtuplizer( edm::EDGetTokenT<reco::MuonCollection>  muonToken   ,
+ 				      //edm::EDGetTokenT<edm::View<reco::Muon> >  muonToken,
 				      edm::EDGetTokenT<edm::SortedCollection<CaloTower>> CaloTowerCollection,
 				      edm::EDGetTokenT<reco::VertexCollection> verticeToken, 
 				      edm::EDGetTokenT<std::vector<reco::PFCandidate>> packedpfcandidatesToken,
@@ -28,6 +29,7 @@ BsTauTauNtuplizer::BsTauTauNtuplizer( edm::EDGetTokenT<reco::MuonCollection>  mu
    
 {
 
+  //muonToken_    = consumes<edm::View<reco::Muon> >       (ps.getParameter<edm::InputTag>("recoMuonSrc"));
   std::cout << "-- (dzcut, fsigcut, vprobcut) = " << c_dz << " " << c_fsig << " " << c_vprob << std::endl;
   
 }
@@ -42,7 +44,7 @@ BsTauTauNtuplizer::~BsTauTauNtuplizer( void )
 bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::EventSetup& iSetup ){
 
   
-    // std::cout << "---------------- event, run, lumi = " << event.id().event() << " " << event.id().run() << " " << event.id().luminosityBlock() << "----------------" << std::endl;
+    //std::cout << "---------------- event, run, lumi = " << event.id().event() << " " << event.id().run() << " " << event.id().luminosityBlock() << "----------------" << std::endl;
   
     /********************************************************************
      *
@@ -95,21 +97,28 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 
     event.getByToken(verticeToken_   , vertices_     );
     event.getByToken(muonToken_	, muons_    );
+    //edm::Handle<std::vector<reco::Muon> > recoMuonsHandle;
+    //event.getByToken(muonToken_, recoMuonsHandle);
     //    event.getByToken(triggerObjects_  , triggerObjects);
-
+    if(!muons_.isValid()) return false;
     std::vector<reco::Muon> muoncollection;
+    //std::vector<int> muoncollection;
     muoncollection.clear();
 
 
-    //    std::cout << "#muons" << muons_->size() << std::endl;
+    //std::cout << "#muons" << muons_->size() << std::endl;
     // evt Triggered
 
-    for(size_t imuon = 0; imuon < muons_->size(); ++ imuon){
-
-        const reco::Muon & muon = (*muons_)[imuon];
-        if( (muon.pt() < 3.5 && TMath::Abs(muon.eta()) < 1.2) || (muon.pt() < 2.5 && TMath::Abs(muon.eta()) > 1.2))  continue;
-        if(TMath::Abs(muon.eta()) > 2.4) continue;
-        if(!(muon.track().isNonnull())) continue;
+    //for(size_t imuon = 0; imuon < muons_->size(); ++ imuon){
+    int pos=-1;
+    for (std::vector<reco::Muon>::const_iterator muon = muons_->begin(); muon != muons_->end(); ++muon) {
+      	pos++;
+        //const reco::Muon & muon = (*muons_)[imuon];
+      //const edm::Ptr<reco::Muon> elePtr(recoMuonsHandle,muon-recoMuonsHandle->begin()); //value map is keyed of edm::Ptrs so we need to make one
+	std::cout<< "!!!!!!!!!!!!!!!!!!!!!"<<muon->pt()<<std::endl;
+        if( (muon->pt() < 3.5 && TMath::Abs(muon->eta()) < 1.2) || (muon->pt() < 2.5 && TMath::Abs(muon->eta()) > 1.2))  continue;
+        if(TMath::Abs(muon->eta()) > 2.4) continue;
+        if(!(muon->track().isNonnull())) continue;
         //    bool isSoft = muon.isSoftMuon(*firstGoodVertex);
         //    bool isGlobal = muon.isGlobalMuon();
         //    bool isTracker = muon.isTrackerMuon();
@@ -162,21 +171,20 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 	//	if(!trigMatch) continue;
 
 	//	std::cout << "imuon = " << imuon << " "  << muon.pt() << std::endl;
-
-        muoncollection.push_back(muon);
+	muoncollection.push_back(*muon);
     }
 
-
-    //    std::cout << "number of matched muon = " << muoncollection.size() << std::endl;
+        //    std::cout << "number of matched muon = " << muoncollection.size() << std::endl;
+    std::cout<<muoncollection.size()<< " "<<!( muoncollection.size() >= 1)<<std::endl;
     if(!( muoncollection.size() >= 1)) return false;
-    
+
+
     iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
     
     //    std::cout << "number of matched muon = " << muoncollection.size() << std::endl;
-
     const reco::TrackRef track_muon = muoncollection[0].muonBestTrack();
     reco::TransientTrack tt_muon = (*builder).build(track_muon);
-
+    std::cout<<"edo"<<muoncollection[0].pt()<< " "<<muoncollection.size()<< " "<<pos<<std::endl;
     KinematicParticleFactoryFromTransientTrack pFactory;
     KinematicParticleVertexFitter kpvFitter;
 
@@ -227,7 +235,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 
 
     Int_t npf_qr = 0;
-
+    /*
 
     for( size_t ii = 0; ii < packedpfcandidates_->size(); ++ii ){   
 
@@ -236,11 +244,11 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       reco::PFCandidate pf = (*packedpfcandidates_)[ii];
       
       if(pf.pt() < 0.5) continue;
-
+    */
       /**************** ARASH **********************************/
       //      if(!pf.hasTrackDetails()) continue;
       /**************** ARASH **********************************/
-      
+      /*
       Float_t precut_dz = pf.vz() - closestVertex.position().z();
       if(TMath::Abs(precut_dz) > c_dz) continue;
       
@@ -249,7 +257,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       //        std::cout << " - - - - - - - > " << temp.Z() << " " << pf.vz() << " " << std::endl;
       //        std::cout << " - - - - - > " << temp.Z() - closestVertex.position().z() << " " << std::endl;
       //        std::cout << " - - - - - > " << pf.vz()  - closestVertex.position().z() << " " << std::endl;
-      
+      */
       /**************** ARASH **********************************/
       //      Bool_t hpflag = pf.trackHighPurity();
       //      if(!hpflag) continue;
@@ -260,7 +268,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       //      if(pf.bestTrack().hitPattern().numberOfValidHits() < 3) continue;
       //      if(pf.bestTrack().normalizedChi2() > 100) continue;
       /**************** ARASH **********************************/
-
+    /*
       if(TMath::Abs(pf.pdgId())!=211) continue; 
       if(TMath::Abs(pf.eta()) > 2.5) continue; 
       
@@ -280,19 +288,19 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       mytracks.push_back(tt_track);
       
     }
-
-
+    */
+    /*
     // cut on tracks 500 MeV
     for( size_t ii = 0; ii < packedpfcandidates_->size(); ++ii ){   
 
       if (packedpfcandidates_->size() > 200.) continue;
 
     	reco::PFCandidate pf = (*packedpfcandidates_)[ii];
-    	
+    */	
 	/**************** ARASH **********************************/
 	//    	if(pf.pt() > 0.5 && pf.trackHighPurity()) { 
 	/**************** ARASH **********************************/
-
+    /*
     	if(pf.pt() > 0.5) { 
 
         nBranches_->BsTauTau_trackPFactivity_pt .push_back(pf.pt());
@@ -300,7 +308,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
         nBranches_->BsTauTau_trackPFactivity_phi.push_back(pf.phi());
       }
 
-    }
+    }*/
 
     // ******************************
     // Calo stuff 
@@ -362,7 +370,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
   
     bool isMC = runOnMC_;
 
-    if(isMC){
+    if(!isMC){
       event.getByToken(genParticlesToken_ , genParticles_); 
       event.getByToken(genTauToken_, genTaus_);
   
@@ -1064,17 +1072,18 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       nBranches_->BsTauTau_B_iso_mindoca.push_back(cands[ic].cand_b_iso_mindoca);
 
     }
-
+    /*
       nBranches_->BsTauTau_mu1_pt.push_back(muoncollection[0].pt());
       nBranches_->BsTauTau_mu1_eta.push_back(muoncollection[0].eta());
       nBranches_->BsTauTau_mu1_phi.push_back(muoncollection[0].phi());
       nBranches_->BsTauTau_mu1_mass.push_back(muoncollection[0].mass());
-      nBranches_->BsTauTau_mu1_q.push_back(muoncollection[0].charge());
+      nBranches_->BsTauTau_mu1_q.push_back(muoncollection[0].charge());*/
       /**************** ARASH **********************************/
       //      nBranches_->BsTauTau_mu1_isLoose.push_back(muoncollection[0].isLooseMuon());
       //      nBranches_->BsTauTau_mu1_isTight.push_back(muoncollection[0].isTightMuon(closestVertex));
       //nBranches_->BsTauTau_mu1_isSoft.push_back(muoncollection[0].isSoftMuon(closestVertex));
       /**************** ARASH **********************************/
+    /*
       nBranches_->BsTauTau_mu1_isPF.push_back(muoncollection[0].isPFMuon());
       nBranches_->BsTauTau_mu1_isGlobal.push_back(muoncollection[0].isGlobalMuon());
       nBranches_->BsTauTau_mu1_isTracker.push_back(muoncollection[0].isTrackerMuon());
@@ -1083,7 +1092,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
       nBranches_->BsTauTau_mu1_vz.push_back(muoncollection[0].vz());
       nBranches_->BsTauTau_mu1_iso.push_back(1.);
       nBranches_->BsTauTau_mu1_dbiso.push_back(aux.MuonPFIso(muoncollection[0]));
-  
+      */
       nBranches_->BsTauTau_PV_vx.push_back(vertices_->begin()->position().x());
       nBranches_->BsTauTau_PV_vy.push_back(vertices_->begin()->position().y());
       nBranches_->BsTauTau_PV_vz.push_back(vertices_->begin()->position().z());
@@ -1105,7 +1114,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 
       //////////////////////////////
 
-
+    
 
 
     /********************************************************************
