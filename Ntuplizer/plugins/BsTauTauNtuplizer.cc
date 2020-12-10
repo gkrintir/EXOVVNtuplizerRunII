@@ -3,7 +3,6 @@
 
 //===================================================================================================================
 BsTauTauNtuplizer::BsTauTauNtuplizer( edm::EDGetTokenT<reco::MuonCollection>  muonToken   ,
- 				      //edm::EDGetTokenT<edm::View<reco::Muon> >  muonToken,
 				      edm::EDGetTokenT<edm::SortedCollection<CaloTower>> CaloTowerCollection,
 				      edm::EDGetTokenT<reco::VertexCollection> verticeToken, 
 				      edm::EDGetTokenT<std::vector<reco::PFCandidate>> packedpfcandidatesToken,
@@ -29,7 +28,6 @@ BsTauTauNtuplizer::BsTauTauNtuplizer( edm::EDGetTokenT<reco::MuonCollection>  mu
    
 {
 
-  //muonToken_    = consumes<edm::View<reco::Muon> >       (ps.getParameter<edm::InputTag>("recoMuonSrc"));
   std::cout << "-- (dzcut, fsigcut, vprobcut) = " << c_dz << " " << c_fsig << " " << c_vprob << std::endl;
   
 }
@@ -44,7 +42,7 @@ BsTauTauNtuplizer::~BsTauTauNtuplizer( void )
 bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::EventSetup& iSetup ){
 
   
-    //std::cout << "---------------- event, run, lumi = " << event.id().event() << " " << event.id().run() << " " << event.id().luminosityBlock() << "----------------" << std::endl;
+    // std::cout << "---------------- event, run, lumi = " << event.id().event() << " " << event.id().run() << " " << event.id().luminosityBlock() << "----------------" << std::endl;
   
     /********************************************************************
      *
@@ -97,25 +95,19 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 
     event.getByToken(verticeToken_   , vertices_     );
     event.getByToken(muonToken_	, muons_    );
-    //edm::Handle<std::vector<reco::Muon> > recoMuonsHandle;
-    //event.getByToken(muonToken_, recoMuonsHandle);
     //    event.getByToken(triggerObjects_  , triggerObjects);
     if(!muons_.isValid()) return false;
     std::vector<reco::Muon> muoncollection;
-    //std::vector<int> muoncollection;
     muoncollection.clear();
 
 
-    //std::cout << "#muons" << muons_->size() << std::endl;
+    // std::cout << "#muons" << muons_->size() << std::endl;
     // evt Triggered
 
     //for(size_t imuon = 0; imuon < muons_->size(); ++ imuon){
-    int pos=-1;
     for (std::vector<reco::Muon>::const_iterator muon = muons_->begin(); muon != muons_->end(); ++muon) {
-      	pos++;
-        //const reco::Muon & muon = (*muons_)[imuon];
-      //const edm::Ptr<reco::Muon> elePtr(recoMuonsHandle,muon-recoMuonsHandle->begin()); //value map is keyed of edm::Ptrs so we need to make one
-	std::cout<< "!!!!!!!!!!!!!!!!!!!!!"<<muon->pt()<<std::endl;
+      //const reco::Muon & muon = (*muons_)[imuon];
+	std::cout<< "debug: muon pt = "<<muon->pt()<<std::endl;
         if( (muon->pt() < 3.5 && TMath::Abs(muon->eta()) < 1.2) || (muon->pt() < 2.5 && TMath::Abs(muon->eta()) > 1.2))  continue;
         if(TMath::Abs(muon->eta()) > 2.4) continue;
         if(!(muon->track().isNonnull())) continue;
@@ -174,8 +166,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
 	muoncollection.push_back(*muon);
     }
 
-        //    std::cout << "number of matched muon = " << muoncollection.size() << std::endl;
-    std::cout<<muoncollection.size()<< " "<<!( muoncollection.size() >= 1)<<std::endl;
+    std::cout << "debug: number of matched muon = " << muoncollection.size() << std::endl;
     if(!( muoncollection.size() >= 1)) return false;
 
 
@@ -184,7 +175,6 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
     //    std::cout << "number of matched muon = " << muoncollection.size() << std::endl;
     const reco::TrackRef track_muon = muoncollection[0].muonBestTrack();
     reco::TransientTrack tt_muon = (*builder).build(track_muon);
-    std::cout<<"edo"<<muoncollection[0].pt()<< " "<<muoncollection.size()<< " "<<pos<<std::endl;
     KinematicParticleFactoryFromTransientTrack pFactory;
     KinematicParticleVertexFitter kpvFitter;
 
@@ -370,7 +360,7 @@ bool BsTauTauNtuplizer::fillBranches( edm::Event const & event, const edm::Event
   
     bool isMC = runOnMC_;
 
-    if(!isMC){
+    if(!isMC){ // dirty change to show fix to Yuta
       event.getByToken(genParticlesToken_ , genParticles_); 
       event.getByToken(genTauToken_, genTaus_);
   
